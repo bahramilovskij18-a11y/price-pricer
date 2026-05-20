@@ -4,9 +4,11 @@ FastAPI сервер для синхронизации данных
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from database import save_record, get_user_records
 
@@ -23,8 +25,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Статические файлы
-app.mount("/static", StaticFiles(directory=".", html=True), name="static")
+# Папка с статическими файлами
+STATIC_DIR = Path(__file__).parent
+
+# Монтируем статические файлы
+app.mount("/static", StaticFiles(directory=STATIC_DIR, html=False), name="static")
+
+# Маршрут для главной страницы
+@app.get("/")
+async def root():
+    """Главная страница"""
+    return FileResponse(STATIC_DIR / "index.html")
+
+@app.get("/index.html")
+async def index():
+    """Открыть приложение"""
+    return FileResponse(STATIC_DIR / "index.html")
 
 class RecordCreate(BaseModel):
     user_id: int

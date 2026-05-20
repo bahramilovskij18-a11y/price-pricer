@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / '.env')
 
 TOKEN = os.getenv('BOT_TOKEN')
-WEB_APP_URL = os.getenv('WEB_APP_URL', 'https://reheat-syndrome-kerosene.ngrok-free.dev')
+WEB_APP_URL = os.getenv('WEB_APP_URL', 'https://price-pricer.onrender.com/index.html')
 
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
