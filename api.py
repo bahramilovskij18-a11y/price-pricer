@@ -1,5 +1,5 @@
 """
-FastAPI сервер для синхронизации данных
+FastAPI сервер для синхронизации данных и webhook бота
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from database import save_record, get_user_records
+from bot import dp, bot
 
 load_dotenv()
 
@@ -24,6 +25,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Startup event для установки webhook
+@app.on_event("startup")
+async def setup_webhook():
+    """Установить webhook при старте сервера"""
+    from bot import WEBHOOK_URL
+    try:
+        webhook_info = await bot.get_webhook_info()
+        if webhook_info.url != WEBHOOK_URL:
+            await bot.set_webhook(url=WEBHOOK_URL)
+            print(f"✅ Webhook установлен: {WEBHOOK_URL}")
+    except Exception as e:
+        print(f"⚠️ Ошибка при установке webhook: {e}")
 
 # Папка с статическими файлами
 STATIC_DIR = Path(__file__).parent
@@ -83,6 +97,18 @@ async def get_records(user_id: int):
 async def health():
     """Проверка здоровья сервера"""
     return {"status": "ok"}
+
+@app.post("/webhook/bot")
+async def webhook_handler(update: dict):
+    """Webhook endpoint для получения обновлений от Telegram"""
+    from aiogram.types import Update
+    try:
+        telegram_update = Update(**update)
+        await dp.feed_update(bot, telegram_update)
+        return {"ok": True}
+    except Exception as e:
+        print(f"Error processing update: {e}")
+        return {"ok": False}
 
 if __name__ == "__main__":
     import uvicorn

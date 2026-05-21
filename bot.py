@@ -1,17 +1,18 @@
-import asyncio
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters.command import Command
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiohttp import web
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Загружаем .env из текущей папки
 load_dotenv(Path(__file__).parent / '.env')
 
 TOKEN = os.getenv('BOT_TOKEN')
-WEB_APP_URL = os.getenv('WEB_APP_URL', 'https://price-pricer.onrender.com/index.html')
+WEB_APP_URL = os.getenv('WEB_APP_URL', 'https://price-pricer.onrender.com')
+WEBHOOK_URL = f"{WEB_APP_URL}/webhook/bot"
 
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
@@ -44,10 +45,3 @@ async def cmd_help(message: types.Message):
         '4️⃣ Нажмите "Добавить запись"\n\n'
         'История сохраняется автоматически.'
     )
-
-async def main():
-    """Запуск бота"""
-    await dp.start_polling(bot)
-
-if __name__ == '__main__':
-    asyncio.run(main())
