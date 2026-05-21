@@ -39,22 +39,23 @@ async def setup_webhook():
     except Exception as e:
         print(f"⚠️ Ошибка при установке webhook: {e}")
 
-# Папка с статическими файлами
-STATIC_DIR = Path(__file__).parent
+# Маршруты API должны быть ПЕРЕД статическими файлами
+@app.get("/health")
+async def health():
+    """Проверка здоровья сервера"""
+    return {"status": "ok"}
 
-# Монтируем статические файлы
-app.mount("/static", StaticFiles(directory=STATIC_DIR, html=False), name="static")
-
-# Маршрут для главной страницы
-@app.get("/")
-async def root():
-    """Главная страница"""
-    return FileResponse(STATIC_DIR / "index.html")
-
-@app.get("/index.html")
-async def index():
-    """Открыть приложение"""
-    return FileResponse(STATIC_DIR / "index.html")
+@app.post("/webhook/bot")
+async def webhook_handler(update: dict):
+    """Webhook endpoint для получения обновлений от Telegram"""
+    from aiogram.types import Update
+    try:
+        telegram_update = Update(**update)
+        await dp.feed_update(bot, telegram_update)
+        return {"ok": True}
+    except Exception as e:
+        print(f"Error processing update: {e}")
+        return {"ok": False}
 
 class RecordCreate(BaseModel):
     user_id: int
@@ -93,22 +94,22 @@ async def get_records(user_id: int):
     records = await get_user_records(user_id)
     return {"records": records}
 
-@app.get("/health")
-async def health():
-    """Проверка здоровья сервера"""
-    return {"status": "ok"}
+# Папка с статическими файлами
+STATIC_DIR = Path(__file__).parent
 
-@app.post("/webhook/bot")
-async def webhook_handler(update: dict):
-    """Webhook endpoint для получения обновлений от Telegram"""
-    from aiogram.types import Update
-    try:
-        telegram_update = Update(**update)
-        await dp.feed_update(bot, telegram_update)
-        return {"ok": True}
-    except Exception as e:
-        print(f"Error processing update: {e}")
-        return {"ok": False}
+# Маршрут для главной страницы (приоритет выше чем StaticFiles)
+@app.get("/")
+async def root():
+    """Главная страница"""
+    return FileResponse(STATIC_DIR / "index.html")
+
+@app.get("/index.html")
+async def index():
+    """Открыть приложение"""
+    return FileResponse(STATIC_DIR / "index.html")
+
+# Монтируем статические файлы на корень (последний маршрут)
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=False), name="static")
 
 if __name__ == "__main__":
     import uvicorn
