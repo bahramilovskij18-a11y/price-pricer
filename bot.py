@@ -23,7 +23,7 @@ async def cmd_start(message: types.Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text='📊 Открыть приложение',
-            web_app=WebAppInfo(url=f'{WEB_APP_URL}/index.html')
+            web_app=WebAppInfo(url=WEB_APP_URL)
         )]
     ])
 

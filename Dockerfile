@@ -7,5 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Запуск бота и API одновременно
-CMD ["sh", "-c", "python bot.py & python api.py"]
+# Запуск только API на Render
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
