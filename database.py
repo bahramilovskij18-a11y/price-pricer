@@ -1,19 +1,19 @@
 """
-API для синхронизации данных с базой
+Модуль работы с базой данных
 """
-from aiogram import types
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Date, Boolean, Enum, func
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Date, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, date
-from decimal import Decimal
 import os
 import enum
-from typing import Optional, List, Dict
+from typing import Optional
 
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///records.db')
 engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+# expire_on_commit=False: не экспайрить атрибуты после commit()
+# иначе после db.close() в finally-блоке SQLAlchemy выбрасывает DetachedInstanceError
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
 
 # Модель БД для записей покупок/продаж
@@ -226,9 +226,13 @@ async def get_seller_history(seller_name: str):
 # ============ ФУНКЦИИ КАССЫ ============
 
 async def initialize_cash(initial_amount: float):
-    """Инициализировать кассу"""
+    """Установить начальный баланс кассы (заменяет предыдущее значение)"""
     db = SessionLocal()
     try:
+        # Удаляем старые initial транзакции перед добавлением новой
+        db.query(CashTransaction).filter(
+            CashTransaction.type == TransactionType.INITIAL.value
+        ).delete()
         transaction = CashTransaction(
             type=TransactionType.INITIAL.value,
             amount=initial_amount,
@@ -256,10 +260,12 @@ async def add_cash_transaction(amount: float, trans_type: str = TransactionType.
         db.close()
 
 def get_cash_balance():
-    """Получить текущий баланс кассы"""
+    """Получить начальный капитал (только initial транзакции — прибыль считается отдельно)"""
     db = SessionLocal()
     try:
-        transactions = db.query(CashTransaction).all()
+        transactions = db.query(CashTransaction).filter(
+            CashTransaction.type == TransactionType.INITIAL.value
+        ).all()
         balance = sum(t.amount for t in transactions)
         return round(balance, 2)
     finally:
