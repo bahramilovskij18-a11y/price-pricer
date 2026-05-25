@@ -2,16 +2,23 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Учет устройств</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://web.telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.plot.ly/plotly-basic-2.27.0.min.js"></script>
 </head>
 <body>
+
+    <!-- Основное приложение -->
     <div class="container">
-        <!-- История слева -->
+
+        <!-- История (левая панель) -->
         <div class="history-panel">
-            <div class="history-header">История</div>
+            <div class="history-header">
+                <span>История</span>
+                <button class="stats-btn" onclick="openStats()">Статистика</button>
+            </div>
             <div class="history-list" id="historyList">
                 <div class="empty-state">
                     <div class="empty-icon">📊</div>
@@ -20,14 +27,15 @@
             </div>
         </div>
 
-        <!-- Форма справа -->
+        <!-- Форма (правая панель) -->
         <div class="form-panel">
             <div class="form-header">Новая запись</div>
 
             <form id="recordForm" class="form-content">
-                <!-- Выбор группы -->
+
+                <!-- Группа / Продавец -->
                 <div class="form-group">
-                    <label class="form-label">Группа</label>
+                    <label class="form-label">Продавец / Группа</label>
                     <select id="groupSelect" class="form-select" required>
                         <option value="">Выберите группу</option>
                         <option value="Tiger">Tiger</option>
@@ -36,22 +44,41 @@
                         <option value="ПРАЙС">ПРАЙС</option>
                         <option value="2PAC">2PAC</option>
                         <option value="ПРОСТОР">ПРОСТОР</option>
+                        <option value="Galaxy">Galaxy</option>
+                        <option value="MaxPhone">MaxPhone</option>
+                        <option value="TechStore">TechStore</option>
+                        <option value="iShop">iShop</option>
+                        <option value="Apple Reseller">Apple Reseller</option>
+                        <option value="Avito">Avito</option>
+                        <option value="Другой">Другой...</option>
                     </select>
                 </div>
 
-                <!-- Название устройства -->
+                <!-- Кастомное имя (Другой) -->
+                <div class="form-group" id="customSellerGroup" style="display:none">
+                    <label class="form-label">Имя продавца</label>
+                    <input type="text" id="customSellerName" class="form-input" placeholder="Введите имя продавца">
+                </div>
+
+                <!-- Устройство -->
                 <div class="form-group">
                     <label class="form-label">Устройство</label>
                     <input type="text" id="deviceName" class="form-input" placeholder="Название устройства" required>
                 </div>
 
-                <!-- Покупка и продажа -->
+                <!-- Количество -->
+                <div class="form-group">
+                    <label class="form-label">Количество</label>
+                    <input type="number" id="quantity" class="form-input" value="1" min="1" step="1">
+                </div>
+
+                <!-- Цены -->
                 <div class="price-section">
                     <div class="price-group">
                         <label class="price-label">Покупка</label>
                         <div class="price-input-wrapper">
                             <span class="currency">₽</span>
-                            <input type="number" id="buyPrice" class="price-input" placeholder="0" step="0.01">
+                            <input type="number" id="buyPrice" class="price-input" placeholder="0" step="0.01" min="0">
                         </div>
                     </div>
                     <div class="price-divider"></div>
@@ -59,18 +86,101 @@
                         <label class="price-label">Продажа</label>
                         <div class="price-input-wrapper">
                             <span class="currency">₽</span>
-                            <input type="number" id="sellPrice" class="price-input" placeholder="0" step="0.01">
+                            <input type="number" id="sellPrice" class="price-input" placeholder="0" step="0.01" min="0">
                         </div>
                     </div>
                 </div>
 
-                <!-- Кнопка отправки -->
+                <!-- Итоговые суммы (появляются при вводе) -->
+                <div class="totals-display" id="totalsDisplay" style="display:none">
+                    <div class="total-item" id="totalBuy"></div>
+                    <div class="total-item total-sell" id="totalSell"></div>
+                </div>
+
+                <!-- Покупатель (необязательно) -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Кто купил
+                        <span class="optional-label">необязательно</span>
+                    </label>
+                    <input type="text" id="buyerName" class="form-input" placeholder="Имя покупателя">
+                </div>
+
                 <button type="submit" class="submit-btn">Добавить запись</button>
             </form>
         </div>
     </div>
 
-    <!-- Toast уведомление -->
+    <!-- Модал Статистики (full-screen) -->
+    <div id="statsModal" class="stats-modal hidden">
+        <div class="stats-modal-content">
+
+            <!-- Шапка -->
+            <div class="stats-header">
+                <button class="back-btn" onclick="closeStats()">← Назад</button>
+                <span class="stats-title">Статистика</span>
+                <div class="stats-header-gap"></div>
+            </div>
+
+            <!-- Период -->
+            <div class="period-tabs">
+                <button class="period-tab active" data-period="day" onclick="loadStats('day')">Сегодня</button>
+                <button class="period-tab" data-period="week" onclick="loadStats('week')">Неделя</button>
+                <button class="period-tab" data-period="month" onclick="loadStats('month')">Месяц</button>
+                <button class="period-tab" data-period="all" onclick="loadStats('all')">Всё время</button>
+            </div>
+
+            <!-- Сводные карточки -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-card-label">Прибыль</div>
+                    <div class="stat-card-value positive" id="statProfit">₽0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Покупки</div>
+                    <div class="stat-card-value" id="statBuys">₽0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Продажи</div>
+                    <div class="stat-card-value" id="statSells">₽0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Сделки</div>
+                    <div class="stat-card-value" id="statDeals">0 шт.</div>
+                </div>
+            </div>
+
+            <!-- График -->
+            <div class="stats-section">
+                <div class="section-title">Прибыль по дням</div>
+                <div id="statsChartContainer" class="chart-container"></div>
+            </div>
+
+            <!-- История по продавцу -->
+            <div class="stats-section">
+                <div class="section-title">История по продавцу</div>
+                <select id="sellerStatsSelect" class="form-select" onchange="loadSellerStats()">
+                    <option value="">Выберите продавца</option>
+                </select>
+                <div id="sellerHistoryContainer" class="seller-history-container"></div>
+            </div>
+
+            <!-- Касса -->
+            <div class="stats-section">
+                <div class="section-title">Касса</div>
+                <div class="cash-info-line" id="cashInitial">Начальный капитал: ₽0</div>
+                <div class="cash-info-line" id="cashProfitLine">Прибыль от сделок: ₽0</div>
+                <div class="cash-balance-row">
+                    <span class="cash-balance-label">Итого баланс:</span>
+                    <span class="cash-balance-value positive" id="cashBalance">₽0</span>
+                </div>
+                <button class="cash-init-btn" onclick="handleInitCash()">Установить начальный баланс</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast -->
     <div id="toast" class="toast"></div>
 
     <script src="app.js"></script>

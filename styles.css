@@ -29,8 +29,11 @@ body {
 }
 
 .history-header {
-    padding: 20px 24px;
-    font-size: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    font-size: 24px;
     font-weight: 700;
     color: #1d1d1f;
     border-bottom: 1px solid #f5f5f7;
@@ -370,4 +373,427 @@ body {
 .toast.error {
     background: #ff3b30;
     box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+/* ============ КНОПКА СТАТИСТИКИ ============ */
+
+.stats-btn {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0a84ff;
+    background: rgba(10, 132, 255, 0.1);
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.stats-btn:hover {
+    background: rgba(10, 132, 255, 0.2);
+}
+
+.stats-btn:active {
+    transform: scale(0.96);
+}
+
+/* ============ ДОПОЛНЕНИЯ ФОРМЫ ============ */
+
+.optional-label {
+    font-size: 11px;
+    color: #86868b;
+    font-weight: 400;
+    margin-left: 6px;
+    background: #f5f5f7;
+    padding: 2px 7px;
+    border-radius: 8px;
+}
+
+.totals-display {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #f0f9f0;
+    border: 1px solid #c8efd0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: -10px;
+}
+
+.total-item {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.total-item.total-sell {
+    color: #34c759;
+}
+
+/* ============ ДОПОЛНЕНИЯ ИСТОРИИ ============ */
+
+.date-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 4px 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #f0f0f2;
+    margin-bottom: 4px;
+}
+
+.history-item.purchase {
+    border-left-color: #0a84ff;
+}
+
+.history-item.sold {
+    border-left-color: #5856d6;
+}
+
+.history-item-type.purchase {
+    background: #0a84ff;
+}
+
+.history-item-type.sold {
+    background: #5856d6;
+}
+
+.history-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.qty-badge {
+    font-size: 11px;
+    background: #e5e5e7;
+    color: #636366;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.history-item-buyer {
+    font-size: 12px;
+    color: #86868b;
+    margin-bottom: 4px;
+    font-style: italic;
+}
+
+.history-item-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #aeaeb2;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #f0f0f2;
+}
+
+/* ============ МОДАЛ СТАТИСТИКИ ============ */
+
+.stats-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #f5f5f7;
+    z-index: 200;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.stats-modal.hidden {
+    display: none;
+}
+
+.stats-modal-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 48px;
+}
+
+/* Шапка статистики */
+.stats-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e5e7;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.back-btn {
+    font-size: 15px;
+    font-weight: 500;
+    color: #0a84ff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 0;
+    min-width: 80px;
+}
+
+.back-btn:active { opacity: 0.7; }
+
+.stats-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d1d1f;
+}
+
+.stats-header-gap {
+    min-width: 80px;
+}
+
+/* Период */
+.period-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.period-tabs::-webkit-scrollbar { display: none; }
+
+.period-tab {
+    flex: 1;
+    min-width: 70px;
+    padding: 9px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #636366;
+    background: #ffffff;
+    border: 1.5px solid #e5e5e7;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.period-tab.active {
+    color: #ffffff;
+    background: #0a84ff;
+    border-color: #0a84ff;
+}
+
+/* Сводные карточки */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px 20px 4px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.stat-card-label {
+    font-size: 11px;
+    color: #86868b;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.stat-card-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1d1d1f;
+}
+
+/* Секции статистики */
+.stats-section {
+    background: #ffffff;
+    border-radius: 14px;
+    margin: 10px 20px;
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 14px;
+}
+
+/* График */
+.chart-container {
+    height: 190px;
+}
+
+.no-chart-data {
+    height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #aeaeb2;
+}
+
+.no-data {
+    text-align: center;
+    font-size: 14px;
+    color: #aeaeb2;
+    padding: 20px 0;
+}
+
+/* История по продавцу */
+.seller-history-container {
+    margin-top: 12px;
+}
+
+.seller-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.seller-stat-card {
+    background: #f5f5f7;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.seller-stat-label {
+    font-size: 11px;
+    color: #86868b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-weight: 500;
+}
+
+.seller-stat-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1d1d1f;
+}
+
+.seller-table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #e5e5e7;
+}
+
+.seller-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 400px;
+}
+
+.seller-table th {
+    background: #f5f5f7;
+    padding: 9px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #86868b;
+    white-space: nowrap;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.seller-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #f5f5f7;
+    color: #1d1d1f;
+    white-space: nowrap;
+}
+
+.seller-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Касса */
+.cash-info-line {
+    font-size: 13px;
+    color: #636366;
+    margin-bottom: 6px;
+}
+
+.cash-balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid #f0f0f2;
+    border-bottom: 1px solid #f0f0f2;
+    margin: 10px 0 14px;
+}
+
+.cash-balance-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.cash-balance-value {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.cash-init-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: #0a84ff;
+    border: 1.5px solid #0a84ff;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cash-init-btn:hover {
+    background: rgba(10, 132, 255, 0.08);
+}
+
+.cash-init-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============ ЦВЕТА ============ */
+
+.positive { color: #34c759; }
+.negative { color: #ff3b30; }
+
+/* ============ АДАПТИВ СТАТИСТИКИ ============ */
+
+@media (max-width: 768px) {
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px 16px 4px;
+    }
+
+    .stats-section {
+        margin: 10px 16px;
+    }
+
+    .period-tabs {
+        padding: 12px 16px 8px;
+    }
 }
