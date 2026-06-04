@@ -187,6 +187,42 @@ body {
 .history-item.purchase { border-left-color: var(--accent); }
 .history-item.sold     { border-left-color: #5856d6; }
 
+/* ===== КНОПКА УДАЛЕНИЯ (десктоп, hover) ===== */
+
+.item-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--negative);
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+
+.history-item-wrap:hover .item-delete-btn { opacity: 1; }
+
+.item-delete-btn:hover {
+    background: var(--negative);
+    color: #ffffff;
+}
+
+/* На тач-устройствах без курсора — прячем, там работает свайп */
+@media (hover: none) {
+    .item-delete-btn { display: none; }
+}
+
 /* ===== ЗНАЧОК БРЕНДА ===== */
 
 .device-badge {

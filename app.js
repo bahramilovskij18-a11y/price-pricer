@@ -385,6 +385,7 @@ function displayHistory() {
             html += `<div class="history-item-wrap" data-searchable="${searchText}">
                 <div class="history-item-delete-bg">Удалить</div>
                 <div class="history-item ${cls}" data-id="${r.id}">
+                    <button class="item-delete-btn" onclick="event.stopPropagation();confirmDelete(${r.id})">×</button>
                     <div class="device-badge" style="background:${brand.bg}">${escapeHtml(brand.text)}</div>
                     <div class="history-item-body">
                         <div class="history-item-top">
