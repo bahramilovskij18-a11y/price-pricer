@@ -10,7 +10,10 @@ import enum
 from typing import Optional
 
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///records.db')
-engine = create_engine(DATABASE_URL)
+# Render provides postgres://, but SQLAlchemy 2.x requires postgresql://
+if DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 # expire_on_commit=False: не экспайрить атрибуты после commit()
 # иначе после db.close() в finally-блоке SQLAlchemy выбрасывает DetachedInstanceError
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
