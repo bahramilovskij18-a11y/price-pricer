@@ -780,6 +780,95 @@ body {
 .positive { color: #34c759; }
 .negative { color: #ff3b30; }
 
+/* ============ МОДАЛ ВВОДА КАССЫ ============ */
+
+.cash-input-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cash-input-modal.hidden { display: none; }
+
+.cash-input-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.cash-input-dialog {
+    position: relative;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px;
+    width: calc(100% - 48px);
+    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.cash-input-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.cash-input-field {
+    width: 100%;
+    border: 1.5px solid #e5e5e7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    color: #1d1d1f;
+    outline: none;
+    margin-bottom: 16px;
+    font-family: inherit;
+    background: #f5f5f7;
+}
+
+.cash-input-field:focus {
+    border-color: #0a84ff;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+}
+
+.cash-input-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.cash-input-cancel,
+.cash-input-confirm {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+}
+
+.cash-input-cancel {
+    background: #f5f5f7;
+    color: #636366;
+}
+
+.cash-input-confirm {
+    background: #0a84ff;
+    color: #ffffff;
+}
+
+.cash-input-cancel:active,
+.cash-input-confirm:active { opacity: 0.75; }
+
 /* ============ АДАПТИВ СТАТИСТИКИ ============ */
 
 @media (max-width: 768px) {

@@ -9,7 +9,11 @@ if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) 
     tg.setHeaderColor('#ffffff');
     tg.setBackgroundColor('#f5f5f7');
 } else {
-    tg = { showAlert: (msg) => alert(msg), initDataUnsafe: {} };
+    tg = {
+        showAlert: (msg) => alert(msg),
+        showConfirm: (msg, cb) => cb(window.confirm(msg)),
+        initDataUnsafe: {}
+    };
 }
 
 const USER_ID = tg?.initDataUnsafe?.user?.id || 1;
@@ -56,6 +60,15 @@ function fmtDateShort(dateStr) {
     return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 // =================== ИНИЦИАЛИЗАЦИЯ DOM ===================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -69,6 +82,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     ['buyPrice', 'sellPrice', 'quantity'].forEach(id =>
         document.getElementById(id).addEventListener('input', updateTotals)
     );
+
+    document.getElementById('cashInputField').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') confirmCashInput();
+        if (e.key === 'Escape') closeCashInput();
+    });
 
     await loadRecords();
 });
@@ -175,7 +193,6 @@ function displayHistory() {
         return;
     }
 
-    // Группируем по дате
     const grouped = {};
     records.forEach(r => {
         const key = r.date || (r.timestamp || '').split('T')[0] || 'unknown';
@@ -195,7 +212,7 @@ function displayHistory() {
         </div>`;
 
         dayRecs.forEach(r => {
-            const seller = r.custom_seller_name || r.seller_group || '';
+            const seller = escapeHtml(r.custom_seller_name || r.seller_group || '');
             const profit = Number(r.profit) || 0;
             let type, cls, amount;
 
@@ -214,7 +231,7 @@ function displayHistory() {
             const qtyBadge = r.quantity > 1
                 ? `<span class="qty-badge">${r.quantity} шт.</span>` : '';
             const buyerLine = r.buyer_name
-                ? `<div class="history-item-buyer">→ ${r.buyer_name}</div>` : '';
+                ? `<div class="history-item-buyer">→ ${escapeHtml(r.buyer_name)}</div>` : '';
             const detailsLine = (r.buy_price > 0 && r.sell_price > 0)
                 ? `<div class="history-item-details">
                     <span>Покупка: ${fmt(r.buy_price * r.quantity)}</span>
@@ -226,7 +243,7 @@ function displayHistory() {
                     <span class="history-item-group">${seller}</span>
                     ${qtyBadge}
                 </div>
-                <div class="history-item-device">${r.device}</div>
+                <div class="history-item-device">${escapeHtml(r.device)}</div>
                 ${buyerLine}
                 <div class="history-item-price">
                     <span class="history-item-type ${cls}">${type}</span>
@@ -240,15 +257,17 @@ function displayHistory() {
     list.innerHTML = html;
 }
 
-async function confirmDelete(id) {
-    if (!confirm('Удалить запись?')) return;
-    try {
-        await apiFetch(`/api/records/${id}`, { method: 'DELETE' });
-        showToast('Запись удалена');
-        await loadRecords();
-    } catch (e) {
-        showToast('Ошибка удаления', true);
-    }
+function confirmDelete(id) {
+    tg.showConfirm('Удалить запись?', async (confirmed) => {
+        if (!confirmed) return;
+        try {
+            await apiFetch(`/api/records/${id}`, { method: 'DELETE' });
+            showToast('Запись удалена');
+            await loadRecords();
+        } catch (e) {
+            showToast('Ошибка удаления', true);
+        }
+    });
 }
 
 // =================== СТАТИСТИКА ===================
@@ -259,7 +278,7 @@ async function openStats() {
     document.getElementById('statsModal').classList.remove('hidden');
     await loadStats('day');
     await loadCashBalance();
-    await populateSellerDropdown();
+    populateSellerDropdown();
 }
 
 function closeStats() {
@@ -311,7 +330,6 @@ function renderChart(data, period) {
     let xLabels, yValues;
 
     if (period === 'all' && dates.length > 30) {
-        // За всё время — агрегируем по месяцам
         const byMonth = {};
         dates.forEach(d => {
             const m = d.slice(0, 7);
@@ -351,19 +369,14 @@ function renderChart(data, period) {
 
 // =================== ИСТОРИЯ ПО ПРОДАВЦУ ===================
 
-async function populateSellerDropdown() {
-    try {
-        const data = await apiFetch('/api/records');
-        const sellers = [...new Set(
-            (data.records || []).map(r => r.custom_seller_name || r.seller_group).filter(Boolean)
-        )].sort();
+function populateSellerDropdown() {
+    const sellers = [...new Set(
+        records.map(r => r.custom_seller_name || r.seller_group).filter(Boolean)
+    )].sort();
 
-        const select = document.getElementById('sellerStatsSelect');
-        select.innerHTML = '<option value="">Выберите продавца</option>' +
-            sellers.map(s => `<option value="${encodeURIComponent(s)}">${s}</option>`).join('');
-    } catch (e) {
-        console.error('Seller dropdown:', e);
-    }
+    const select = document.getElementById('sellerStatsSelect');
+    select.innerHTML = '<option value="">Выберите продавца</option>' +
+        sellers.map(s => `<option value="${encodeURIComponent(s)}">${escapeHtml(s)}</option>`).join('');
 }
 
 async function loadSellerStats() {
@@ -374,8 +387,6 @@ async function loadSellerStats() {
         container.innerHTML = '';
         return;
     }
-
-    const seller = decodeURIComponent(encoded);
 
     try {
         const data = await apiFetch(`/api/records/seller/${encoded}`);
@@ -423,7 +434,7 @@ async function loadSellerStats() {
                     </thead>
                     <tbody>
                         ${recs.map(r => `<tr>
-                            <td>${r.device || '—'}</td>
+                            <td>${escapeHtml(r.device) || '—'}</td>
                             <td>${r.quantity || 1}</td>
                             <td>${r.buy_price > 0 ? fmt(r.buy_price * (r.quantity || 1)) : '—'}</td>
                             <td>${r.sell_price > 0 ? fmt(r.sell_price * (r.quantity || 1)) : '—'}</td>
@@ -463,16 +474,24 @@ async function loadCashBalance() {
     }
 }
 
-async function handleInitCash() {
-    const input = prompt('Введите начальный баланс кассы (₽):');
-    if (input === null) return;
+function handleInitCash() {
+    document.getElementById('cashInputField').value = '';
+    document.getElementById('cashInputModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('cashInputField').focus(), 50);
+}
 
-    const amount = parseFloat(input.replace(/\s/g, '').replace(',', '.'));
+function closeCashInput() {
+    document.getElementById('cashInputModal').classList.add('hidden');
+}
+
+async function confirmCashInput() {
+    const input = document.getElementById('cashInputField').value;
+    const amount = parseFloat(String(input).replace(/\s/g, '').replace(',', '.'));
     if (isNaN(amount) || amount < 0) {
         showToast('Введите корректную сумму', true);
         return;
     }
-
+    closeCashInput();
     try {
         await apiFetch(`/api/cash/initialize?amount=${amount}`, { method: 'POST' });
         showToast('Касса обновлена');

@@ -185,6 +185,19 @@
     <!-- Toast -->
     <div id="toast" class="toast"></div>
 
+    <!-- Модал ввода суммы кассы -->
+    <div id="cashInputModal" class="cash-input-modal hidden">
+        <div class="cash-input-overlay" onclick="closeCashInput()"></div>
+        <div class="cash-input-dialog">
+            <div class="cash-input-title">Начальный баланс кассы</div>
+            <input type="number" id="cashInputField" class="cash-input-field" placeholder="0" min="0" step="1">
+            <div class="cash-input-actions">
+                <button class="cash-input-cancel" onclick="closeCashInput()">Отмена</button>
+                <button class="cash-input-confirm" onclick="confirmCashInput()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
